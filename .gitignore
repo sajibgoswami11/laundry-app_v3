@@ -20,7 +20,7 @@
 # production
 /build
 /migrations
-*.db
+
 # misc
 .DS_Store
 *.pem
