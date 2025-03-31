@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+enum UserRole {
+  ADMIN
+  SHOP_OWNER
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(CUSTOMER)
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  shop     Shop?
+  orders   Order[]
+}
+
+model Shop {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  phone       String
+  email       String
+  description String?
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  ownerId String @unique
+  owner   User     @relation(fields: [ownerId], references: [id])
+  services Service[]
+  orders   Order[]
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  shopId    String
+  shop      Shop        @relation(fields: [shopId], references: [id])
+  orderItems OrderItem[]
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  total       Float
+  status      OrderStatus @default(PENDING)
+  pickupTime  DateTime
+  deliveryTime DateTime
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  shopId    String
+  shop      Shop        @relation(fields: [shopId], references: [id])
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id])
+} 
